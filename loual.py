@@ -5,6 +5,7 @@ from random import choice
 import time
 from os.path import join
 import re
+
 CONFIG_TEXT = """
 {
     "nick": "нет", 
@@ -45,8 +46,37 @@ SETTINGS_CONFIG_TEXT = """
 } 
 """
 
+CHAT_LOG_KICK = """
+{
+    "info": {
+             "text": "Лог киков:",
+             "count_kicks": 0
+            }
+}
+"""
+
+"""
+async def buyRbal(user, id):
+    return "Неработает"
+
+async def unban(user, id):
+    dirik = os.getcwd()
+    unbanCount = 50
+    checkBan = user['admin_lvl']
+    if checkBan == 1:
+        if user['rbal'] >= unbanCount:
+            user['rbal'] -= unbanCount
+            user['admin_lvl'] = 0
+            user['own_prefix'] = 'Юзер'
+            with open(join(dirik, 'db', f'users{id}.json'), 'w', encoding='utf-8') as f:
+                f.write(json.dumps(user, ensure_acsii=False, indent=2))
+            return "Вы разабанились за 50 крышечек"
+        else: return f"На балансе недостаточно крышечек\n Необходимо {unbanCount} крышек"
+    else: return "Ты и так не в бане"        
+"""
+
 async def sub(i):
-    ret = sub = re.sub("(\d)(?=(\d{3})+(?!\d))", r"\1,", "%d" % i)
+    ret = re.sub("(\d)(?=(\d{3})+(?!\d))", r"\1,", "%d" % i)
     return ret
 
 async def bonus(id, time):
@@ -148,11 +178,9 @@ async def remove_recover(id):
 
 
 
-
-
 async def buisnes_put(id, time):
-    user = json.load(open(f'db/users{id}.json'))
-    bonuses = ["Оставленный пакет", "Заначка", "Чаевые", "Жвачка", "Дошик", "Заплесневелый хлеб", "Телефон", "Золотые часы", "Паспорт", "Ценные бумаги", "Ботинок", "Дырявый носок", "Чья-то кофта", "Ржавые крышки", "Паштет", "Gucci тапок", "Парик"]
+    user = json.load(open(f'db/users{id}.json', encoding='utf-8'))
+    bonuses = ["Оставленный пакет", "Заначка", "Чаевые", "Жвачка", "Дошик", "Заплесневелый хлеб", "Телефон", "Золотые часы", "Паспорт", "Ценные бумаги", "Ботинок", "Дырявый носок", "Кофта", "Ржавые крышки", "Паштет", "Гучи тапок", "Парик"]
     buisnes_lvl = user['buisnes_lvl']
     buisnes_time = user['buisnes_time']
     dirik = os.getcwd()
@@ -161,7 +189,7 @@ async def buisnes_put(id, time):
         buisnes_time = time
     if time > buisnes_time:
         user['buisnes_time'] = time + 3600
-        total_hours = (time - buisnes_time) / 3600
+        total_hours = (time - buisnes_time - 3600) / 3600
         if buisnes_lvl == 1:
             bal = 25000 * total_hours
         elif buisnes_lvl == 2:
@@ -182,8 +210,8 @@ async def buisnes_put(id, time):
             bal = 400000000 * total_hours
         if bal != 0:
             r = random.randint(1, 100)
-            sub_bal = await sub(round(bal, 0))
-            send = f'Ты снял с бизнеса {sub_bal}$'
+            b_bal = await sub(round(bal, 0))
+            send = f'Ты снял с бизнеса {b_bal}$'
             if r < 4:
                 inv = user['inventory']
                 inv_c = user['inventory_count']
@@ -198,12 +226,12 @@ async def buisnes_put(id, time):
                     inv_c[index] += r_c
                 user['inventory'] = inv
                 user['inventory_count'] = inv_c
-                send += f'\nА ещё твои работники на работе нашли {inv_c} штук - "{g_bns}"'
+                send += f'\nА ещё твои работники на работе нашли {r_c} штук(и) - "{g_bns}"'
             user['balance'] += bal
-            with open(join(dirik, 'db', f'users{id}.json'), 'w') as f:
+            with open(join(dirik, 'db', f'users{id}.json'), 'w', encoding='utf-8') as f:
                 f.write(json.dumps(user, ensure_ascii=False, indent=2))
             return ["OK", send]
-        else: return ["NO", None]
+        else: return ["NOT", None]
     elif time <= buisnes_time: return ["NO", None]
 
 
@@ -390,6 +418,15 @@ async def admlvl_set(id, a, pf):
         f.write(json.dumps(user, ensure_ascii=False, indent=2))
     return "OK"
 
+async def kickLogAdd(c_id, f_id, vk_user_id, sendReason):
+    dirik = os.getcwd()
+    log = json.load(open(f"kickLogs/{c_id}.json", encoding='utf-8'))
+    log['info']['count_kicks'] +=1
+    c_kicks = log['info']['count_kicks']
+    log.update({c_kicks: { "who": f_id, "whom": vk_user_id, "reason": sendReason } })
+    with open(join(dirik, 'kickLogs', f'{c_id}.json'), 'w', encoding='utf-8') as f:
+        f.write(json.dumps(log, ensure_ascii=False, indent=2))
+    return "OK"
 
 
 async def prov(id):
@@ -412,6 +449,16 @@ async def prov(id):
         with open(join(dirik, 'db', f'users{id}.json'), 'w', encoding='utf-8') as f:
             f.write(json.dumps(user, ensure_ascii=False, indent=2))
     return "NO"
+
+async def kickLog(id):
+    dirik = os.getcwd()
+    path = os.path.exists(f"{dirik}/kickLogs/{id}.json")
+    if not path:
+        with open(join(dirik, 'kickLogs', f'{id}.json'), 'w', encoding='utf-8') as f:
+            f.write(CHAT_LOG_KICK)
+        return "OK"
+    return "NO"
+
 
 async def settings():
     dirik = os.getcwd()
