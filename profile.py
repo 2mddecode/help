@@ -35,7 +35,7 @@ async def profile(message: Message):
     sub = await subs(data)
     if data['inventory'] == []:
             inv = 'Пуст'
-        else: inv = 'Что-то есть'
+    else: inv = 'Что-то есть'
     return f"Вот твой профиль\n" \
            f"{statuses[1]}" \
            f"{statuses[0]}" \
@@ -47,7 +47,7 @@ async def profile(message: Message):
            f"&#128081;Репутация: {sub[1]}\n" \
            f"&#128230;Инвентарь: {inv}\n" \
            f"\n" \
-           f"&#128273;Его имущество\n" \
+           f"&#128273;Твоё имущество\n" \
            f"&#127981;Бизнес: {data['buisnes_name']}"
 
 @bl.message(text="гет")
