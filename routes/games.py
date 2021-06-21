@@ -26,7 +26,7 @@ async def bet(message: Message, a: int):
     user = json.load(open(f'db/users{message.from_id}.json'))
     dirik = os.getcwd()
 
-    if not user["balance"] >= a:
+    if not user["balance"] >= a and user['balance'] == 0:
         return "Работать иди, понял?"
     if s < 41:
         ss = user["balance"] - a
@@ -106,7 +106,7 @@ async def bet_all(message: Message):
     user = json.load(open(f'db/users{message.from_id}.json'))
     a = user['balance']
 
-    if not user["balance"] >= a:
+    if not user["balance"] >= a and user['balance'] == 0:
         return "Работать иди, понял?"
     if s < 41:
         ss = user["balance"] - a
