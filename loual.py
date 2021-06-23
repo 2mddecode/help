@@ -210,7 +210,7 @@ async def bonus(id, time):
             elif rr_rep > 2:
                 r_rep = random.randint(1, 100)
             sub_rep = await sub(r_rep)
-            user['rep'] += r_rep
+            user['reputation'] += r_rep
             send = f"Ты получил {sub_rep} очков репутации.\n" \
                     "Приходи через 24 часа"
         elif r > 80 and r < 101:
@@ -227,7 +227,7 @@ async def recover(id):
     if id in info['recover_list']:
         dirik = os.getcwd()
         user = json.load(open(f'db/users{id}.json'))
-        user['admin_lvl'] = 5
+        user['admin_lvl'] = 6
         with open(join(dirik, 'db', f'users{id}.json'), 'w') as f:
             f.write(json.dumps(user, ensure_ascii=False, indent=2))
         return "OK"
