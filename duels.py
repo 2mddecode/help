@@ -23,9 +23,9 @@ async def duelThrow(message: Message):
     elif user1['duelWith'] != None:
         duel = json.load(open(f"db/other/duel-chat{chat_id}.json"))
         try:
-            timeL = duel[f"{from_id}-{user['duelWith']}"]['time_left']
+            timeL = duel[f"{from_id}-{user1['duelWith']}"]['time_left']
         except:
-            timeL = duel[f"{user['duelWith']}-{from_id}"]['time_left']
+            timeL = duel[f"{user1['duelWith']}-{from_id}"]['time_left']
         if time.time() < timeL:
             return "Тебе уже сделали вызов"
     elif from_id == vk_user_id:
@@ -48,7 +48,11 @@ async def duelThrow(message: Message, vk_user_id: int, **kwargs):
         return "Он и так тебе запрос кинул"
     elif user1['duelWith'] != None:
         duel = json.load(open(f"db/other/duel-chat{chat_id}.json"))
-        if time.time() < duel['time_left']:
+        try:
+            timeL = duel[f"{from_id}-{user1['duelWith']}"]['time_left']
+        except:
+            timeL = duel[f"{user1['duelWith']}-{from_id}"]['time_left']
+        if time.time() < timeL:
             return "Тебе уже сделали вызов"
     elif from_id == vk_user_id:
         return "Ты не можешь бросить себе вызов"
