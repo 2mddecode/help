@@ -15,16 +15,21 @@ async def duelThrow(message: Message):
     vk_user_id = message.reply_message.from_id
     await loual.prov(vk_user_id)
     from_id = message.from_id
+    chat_id = message.chat_id
+    await loual.duels(chat_id)
     user1 = json.load(open(f"db/users{from_id}.json"))
     if user1['duelWith'] == vk_user_id:
         return "Он и так тебе запрос кинул"
     elif user1['duelWith'] != None:
         duel = json.load(open(f"db/other/duel-chat{chat_id}.json"))
-        if time.time() < duel['time_left']:
+        try:
+            timeL = duel[f"{from_id}-{user['duelWith']}"]['time_left']
+        except:
+            timeL = duel[f"{user['duelWith']}-{from_id}"]['time_left']
+        if time.time() < timeL:
             return "Тебе уже сделали вызов"
     elif from_id == vk_user_id:
         return "Ты не можешь бросить себе вызов"
-    chat_id = message.chat_id
     t = time.time() + 30
     await loual.duelThrow(id1=vk_user_id, id2=from_id, chat_id=chat_id, time=t)
     return f"&#127913;@id{vk_user_id} Вас вызывает на дуэль @id{from_id}\n" \
@@ -37,6 +42,8 @@ async def duelThrow(message: Message, vk_user_id: int, **kwargs):
     await loual.prov(vk_user_id)
     from_id = message.from_id
     user1 = json.load(open(f"db/users{from_id}.json"))
+    chat_id = message.chat_id
+    await loual.duels(chat_id)
     if user1['duelWith'] == vk_user_id:
         return "Он и так тебе запрос кинул"
     elif user1['duelWith'] != None:
@@ -45,7 +52,6 @@ async def duelThrow(message: Message, vk_user_id: int, **kwargs):
             return "Тебе уже сделали вызов"
     elif from_id == vk_user_id:
         return "Ты не можешь бросить себе вызов"
-    chat_id = message.chat_id
     t = time.time() + 30
     await loual.duelThrow(id1=vk_user_id, id2=from_id, chat_id=chat_id, time=t)
     return f"&#127913;@id{vk_user_id} Вас вызывает на дуэль @id{from_id}\n" \
