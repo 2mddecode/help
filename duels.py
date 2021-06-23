@@ -25,7 +25,10 @@ async def duelThrow(message: Message):
         try:
             timeL = duel[f"{from_id}-{user1['duelWith']}"]['time_left']
         except:
-            timeL = duel[f"{user1['duelWith']}-{from_id}"]['time_left']
+            try:
+                timeL = duel[f"{user1['duelWith']}-{from_id}"]['time_left']
+            except:
+                timeL = time.time() - 1000
         if time.time() < timeL:
             return "Тебе уже сделали вызов"
     elif from_id == vk_user_id:
@@ -34,7 +37,7 @@ async def duelThrow(message: Message):
     await loual.duelThrow(id1=vk_user_id, id2=from_id, chat_id=chat_id, time=t)
     return f"&#127913;@id{vk_user_id} Вас вызывает на дуэль @id{from_id}\n" \
            f"&#8987;Даётся 30 секунд что бы принять вызов\n" \
-           "Принять командой: принять"
+           "Принять командой: 'дуэль принять' или 'принять'"
 
 @bl.message(text="дуэль [id<vk_user_id:int>|<other>")
 async def duelThrow(message: Message, vk_user_id: int, **kwargs):
@@ -51,7 +54,10 @@ async def duelThrow(message: Message, vk_user_id: int, **kwargs):
         try:
             timeL = duel[f"{from_id}-{user1['duelWith']}"]['time_left']
         except:
-            timeL = duel[f"{user1['duelWith']}-{from_id}"]['time_left']
+            try:
+                timeL = duel[f"{user1['duelWith']}-{from_id}"]['time_left']
+            except:
+                timeL = time.time() - 1000
         if time.time() < timeL:
             return "Тебе уже сделали вызов"
     elif from_id == vk_user_id:
@@ -59,6 +65,7 @@ async def duelThrow(message: Message, vk_user_id: int, **kwargs):
     t = time.time() + 30
     await loual.duelThrow(id1=vk_user_id, id2=from_id, chat_id=chat_id, time=t)
     return f"&#127913;@id{vk_user_id} Вас вызывает на дуэль @id{from_id}\n" \
+           f"&#8987;Даётся 30 секунд что бы принять вызов\n" \
            "Принять командой: 'дуэль принять' или 'принять'"
 
 @bl.message(text=["дуэль сдаться", "сдаться"])
