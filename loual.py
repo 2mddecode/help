@@ -29,7 +29,21 @@ CONFIG_TEXT = """
     "duelsLost": 0,
     "allFires": 0,
     "repDuels": 0,
-    "duelWith": null
+    "duelWith": null,
+    "bitcoin": 0,
+    "vPrefix": "Нету",
+    "timeTransfer": 0,
+    "remainTransfer": 1000000000,
+    "bcFarmLvl": 0,
+    "bcFarmTime": 0,
+    "bcFarmName": "Нету",
+    "bcFarmCount": 0,
+    "other": {
+                "limitBank": 5000000000,
+                "limitTransfer": 1000000000,
+                "bcLimitFarms": 1000,
+                "xBets": [41, 40, 61, 60, 81, 80, 101, 100, 116, 115, 141, 140, 151, 150, 158, 157, 161]
+            }
 } 
 """
 
@@ -76,14 +90,70 @@ async def unban(user, id):
             user['own_prefix'] = 'Юзер'
             with open(join(dirik, 'db', f'users{id}.json'), 'w', encoding='utf-8') as f:
                 f.write(json.dumps(user, ensure_acsii=False, indent=2))
-            return "Вы разабанились за 50 крышечек"
+            return "Вы разбанились за 50 крышечек"
         else: return f"На балансе недостаточно крышечек\n Необходимо {unbanCount} крышек"
     else: return "Ты и так не в бане"        
 """
 
+async def update(user):
+    try:
+        act_codes = user['act_codes']
+    except:
+        user.update({'act_codes': []})
+            
+    try:
+        duelsWin = user['duelsWin']
+    except:
+        user.update({'duelsWin': 0, 'duelsLost': 0, 'allFires': 0, 'repDuels': 0})
+            
+    try:
+        duelWith = user['duelWith']
+    except:
+        user.update({'duelWith': None})
+
+    try:
+        bitcoin = user['bitcoin']
+    except:
+        user.update({"vPrefix": "Нету", "timeTransfer": 0, "remainTransfer": 1000000000, "bitcoin": 0, "bcFarmLvl": 0, "bcFarmTime": 0, "bcFarmName": "Нету", "bcFarmCount": 0})
+        user.update({"other": {"limitBank": 5000000000, "limitTransfer": 1000000000, "bcLimitFarms": 1000, "xBets": [41, 40, 61, 60, 81, 80, 101, 100, 116, 115, 141, 140, 151, 150, 158, 157, 161]}})
+    return user
+
+
+
 async def sub(i):
     ret = re.sub("(\d)(?=(\d{3})+(?!\d))", r"\1,", "%d" % i)
     return ret
+
+
+async def bcFarmPut(id, time):
+    user = json.load(open(f'db/users{id}.json', encoding='utf-8'))
+    bcFarmLvl = user['bcFarmLvl']
+    bcFarmTime = user['bcFarmTime']
+    bcFarmLimit = user['other']['bcLimitFarms']
+    i = bcFarmLvl - 1
+    gotBc = [5, 20, 100, 250, 1_000, 5_000, 15_000]
+    dirik = os.getcwd()
+    bc = 0
+    cFarms = user['bcFarmCount']
+    if bcFarmTime == 0:
+        bcFarmTime = time + 100
+    if time > bcFarmTime: 
+        total_hours = ((time - bcFarmTime) + 3600) / 3600
+        user['bcFarmTime'] = time + 3600
+        if bcFarmLvl >= 1:
+            bc = (gotBc[i] * cFarms) * total_hours
+        if bc != 0:
+            b_bc = await sub(round(bc, 0))
+            send = f'Ты собрал(а) с фермы {b_bc}₿'
+            user['bitcoin'] += bc
+            with open(join(dirik, 'db', f'users{id}.json'), 'w', encoding='utf-8') as f:
+                f.write(json.dumps(user, ensure_ascii=False, indent=2))
+            return ["OK", send]
+        else: return ["NOT", None]
+    elif time <= bcFarmTime: return ["NO", None]
+
+
+
 
 
 
@@ -137,7 +207,7 @@ async def duelFire(id1, id2, chat_id):
         d = duel[f'{id1}-{id2}']['fireNow']
         out = 1
     r = random.randint(1, 100)
-    if r < 51:
+    if r < 71  :
         result = False
     else:
         result = True
@@ -176,18 +246,18 @@ async def bonus(id, time):
                 index = r_lvl - 1
                 user['buisnes_name']
                 send = "Возрадуйся, тебе повезло\n" \
-                        f'Ты получил - "{name_lvl[index]}"\n' \
+                        f'Ты получил(а) - "{name_lvl[index]}"\n' \
                         "Приходи через 24 часа"
             else:
                 user['buisnes_lvl'] += 1
                 send = "Возрадуйся, тебе повезло\n" \
-                        f'Ты улучшился до - "{name_lvl[index]}"\n' \
+                        f'Ты получил(а) улучшение до - "{name_lvl[index]}"\n' \
                         "Приходи через 24 часа"
         elif r > 2 and r < 9:
             r_rbal = random.randint(1, 50)
             user['rbal'] += r_rbal
             send = f"Повезло, повезло\n" \
-                    f'Ты получил, целых {r_rbal} крышек\n' \
+                    f'Ты получил(а), целых {r_rbal} крышек\n' \
                     "Приходи через 24 часа"
         elif r > 8 and r < 71:
             rand = random.randint(1, 100)
@@ -201,7 +271,7 @@ async def bonus(id, time):
                 r_bal = random.randint(100, 10_000)
             user['balance'] += r_bal
             sub_bal = await sub(r_bal)
-            send = f"Сегодня ты забрал {sub_bal}$\n" \
+            send = f"Сегодня ты забрал(а) {sub_bal}$\n" \
                     "Приходи через 24 часа"
         elif r > 70 and r < 81:
             rr_rep = random.randint(1, 10)
@@ -211,10 +281,10 @@ async def bonus(id, time):
                 r_rep = random.randint(1, 100)
             sub_rep = await sub(r_rep)
             user['reputation'] += r_rep
-            send = f"Ты получил {sub_rep} очков репутации.\n" \
+            send = f"Ты получил(а) {sub_rep} очков репутации.\n" \
                     "Приходи через 24 часа"
         elif r > 80 and r < 101:
-            send = "К сожалению ничего не получил"
+            send = "К сожалению ничего не получил(а)"
         with open(join(dirik, 'db', f'users{id}.json'), 'w') as f:
                 f.write(json.dumps(user, ensure_ascii=False, indent=2))
         return ["OK", send]
@@ -269,7 +339,7 @@ async def buisnes_put(id, time):
     dirik = os.getcwd()
     bal = 0
     if buisnes_time == 0:
-        buisnes_time = time
+        buisnes_time = time + 100
     if time > buisnes_time: 
         total_hours = ((time - buisnes_time) + 3600) / 3600
         user['buisnes_time'] = time + 3600
@@ -294,8 +364,8 @@ async def buisnes_put(id, time):
         if bal != 0:
             r = random.randint(1, 100)
             b_bal = await sub(round(bal, 0))
-            send = f'Ты снял с бизнеса {b_bal}$'
-            if r < 4:
+            send = f'Ты снял(а) с бизнеса {b_bal}$'
+            if r < 3:
                 inv = user['inventory']
                 inv_c = user['inventory_count']
                 g_bns = choice(bonuses)
@@ -322,7 +392,7 @@ async def buisnes_put(id, time):
 
 
 async def work(id, time):
-    fun_answers = ["Грыжу", "Гастрит", "Перелом позвоночника", "Инфаркт", "Инсульт", "Рак головы", "COVID2077", "Кнут и Пряник", "'E' - баллу", "Сифилис", "Изжогу", "Потерю крови", "перелом в пяти местах"]
+    fun_answers = ["Грыжу", "Гастрит", "Перелом позвоночника", "Инфаркт", "Инсульт", "Рак головы", "COVID2077", "Кнут и Пряник", "по 'E' - баллу", "Сифилис", "Изжогу", "Потерю крови", "перелом в пяти местах"]
     dirik = os.getcwd()
     user = json.load(open(f'db/users{id}.json'))
     work_time = user['last_work']
@@ -331,19 +401,19 @@ async def work(id, time):
         user['last_work'] = time + 3600
         r = random.randint(0,100)
         if r <= 5:
-            rbal = random.randint(1, 50)
+            rbal = random.randint(1, 10)
             bal = random.randint(1000, 15000)
             user['rbal'] += rbal
             user['balance'] += bal
             sub_bal = await sub(bal)
             send = f"Да тебе повезло\n" \
-                   f"Ты заработал {sub_bal}$ и нашёл {rbal} крышек"
+                   f"Ты заработал(а) {sub_bal}$ и нашёл {rbal} крышек"
         if r >= 6:
             bal = random.randint(1000, 15000)
             user['balance'] += bal
             rfa = random.randint(0, len(fun_answers) - 1)
             sub_bal = await sub(bal)
-            send = f"Зря пахал, заработал всего лишь {sub_bal}$\n И ещё {fun_answers[rfa]}"
+            send = f"Зря пахал, заработал(а) всего лишь {sub_bal}$\n И ещё {fun_answers[rfa]}"
         with open(join(dirik, 'db', f'users{id}.json'), 'w') as f:
             f.write(json.dumps(user, ensure_ascii=False, indent=2))
         return ["OK", send]
@@ -521,6 +591,7 @@ async def prov(id):
     dirik = os.getcwd()
     path = os.path.exists(f"{dirik}/db/users{id}.json")
     if not path:
+        os.system('mkdir db')
         with open(join(dirik, 'db', f'users{id}.json'), 'w', encoding='utf-8') as f:
             f.write(CONFIG_TEXT)
         return "OK"
@@ -530,22 +601,7 @@ async def prov(id):
         pf = user['own_prefix']
         user['nick'] = nick
         user['own_prefix'] = pf
-        
-        try:
-            act_codes = user['act_codes']
-        except:
-            user.update({'act_codes': []})
-            
-        try:
-            duelsWin = user['duelsWin']
-        except:
-            user.update({'duelsWin': 0, 'duelsLost': 0, 'allFires': 0, 'repDuels': 0})
-            
-        try:
-            duelWith = user['duelWith']
-        except:
-            user.update({'duelWith': None})
-
+        user = await update(user)
         with open(join(dirik, 'db', f'users{id}.json'), 'w', encoding='utf-8') as f:
             f.write(json.dumps(user, ensure_ascii=False, indent=2))
     return "NO"
@@ -558,6 +614,7 @@ async def kickLog(id):
     dirik = os.getcwd()
     path = os.path.exists(f"{dirik}/kickLogs/{id}.json")
     if not path:
+        os.system('mkdir kickLogs')
         with open(join(dirik, 'kickLogs', f'{id}.json'), 'w', encoding='utf-8') as f:
             f.write(CHAT_LOG_KICK)
         return "OK"
@@ -601,6 +658,8 @@ async def bugReport():
 """
 
     if not path:
+        os.system('mkdir db')
+        os.system('mkdir other')
         with open(join(dirik, 'db', 'other', f'bugReports.json'), 'w', encoding='utf-8') as f:
             f.write(CODE_TEXT)
         return "OK"
