@@ -84,6 +84,7 @@ async def buisnes_sell(message: Message):
     index = user['buisnes_lvl'] - 1
     if user['buisnes_lvl'] != 0:
         user['buisnes_lvl'] = 0
+        user['buisnes_name'] = "Нету"
         user['balance'] += round(buy_lvl[index] / 4)
         selled = round(buy_lvl[index] / 4)
         sell = await loual.sub(i=selled)
