@@ -8,6 +8,21 @@ from os.path import join
 bl = BotLabeler()
 bl.vbml_ignore_case = True
 
+@bl.message(text="ферма имя <name>")
+async def buisnes_name(message: Message, name):
+    await loual.prov(message.from_id)
+    user = json.load(open(f'db/users{message.from_id}.json'), encoding='utf-8')
+    if user['vip'] >= 2:
+        if len(name) <= 10:
+            user['bcFarmName'] = name
+            with open(join(dirik, 'db', f'users{message.from_id}.json'), 'w', encoding='utf-8') as f:
+                f.write(json.dumps(user, ensure_ascii=False, indent=2))
+            return f"Установил имя ферме: {name}"
+        else:
+            return "Ты не можешь поставить имя больше чем 10 символов"
+    else:
+        return "У тебя нет доступа к этой команде"
+
 @bl.message(text="ферма")
 async def bcFarmPut(message: Message):
     await loual.prov(message.from_id)
@@ -15,7 +30,9 @@ async def bcFarmPut(message: Message):
     if info[0] == "OK":
         return f'{info[1]}'
     elif info[0] == "NO":
-        return 'За последний час ты уже снимал(а) биткоины с ферм'
+        user = json.load(open(f'db/users{message.from_id}.json'))
+        timeEnd = round((user['bcFarmTime'] - time.time()) / 60)
+        return f'За последний час ты уже снимал(а) биткоины с ферм\n Осталось {timeEnd} минут(ы)'
     elif info[0] == "NOT":
         return 'У тебя нет ферм\n' \
                'Список биткоин ферм посмотреть так: "фермы"'
@@ -117,8 +134,10 @@ async def bсFarmSell(message: Message, a: int):
         user['balance'] += round(a * 34000)
         with open(join(dirik, 'db', f'users{message.from_id}.json'), 'w', encoding='utf-8') as f:
             f.write(json.dumps(user, ensure_ascii=False, indent=2))
-        return f"Ты продал {round(a)}₿\n" \
-               f"И получил {round(a * 34000)}"
+        sub_a = await loual.sub(i=round(a))
+        sub_ad = await loual.sub(i=round(a * 34000))
+        return f"Ты продал {sub_a}₿\n" \
+               f"И получил {sub_ad}"
 
 @bl.message(text=["биткоин продать всё", "биткоин продать все", "биткоины продать всё", "биткоины продать все", "бк продать всё", "бк продать все", "бк продать всё", "бк продать все", "бк продать", "биткоин продать", "биткоины продать"])
 async def bсFarmSell(message: Message):
@@ -130,7 +149,9 @@ async def bсFarmSell(message: Message):
     user['balance'] += round(a * 34000)
     with open(join(dirik, 'db', f'users{message.from_id}.json'), 'w', encoding='utf-8') as f:
         f.write(json.dumps(user, ensure_ascii=False, indent=2))
-    return f"Ты продал {round(a)}₿\n" \
-           f"И получил {round(a * 34000)}"
+    sub_a = await loual.sub(i=round(a))
+    sub_ad = await loual.sub(i=round(a * 34000))
+    return f"Ты продал {sub_a}₿\n" \
+               f"И получил {sub_ad}"
 
         
