@@ -137,7 +137,7 @@ async def bсFarmSell(message: Message, a: int):
         sub_a = await loual.sub(i=round(a))
         sub_ad = await loual.sub(i=round(a * 34000))
         return f"Ты продал {sub_a}₿\n" \
-               f"И получил {sub_ad}"
+               f"И получил {sub_ad}$"
 
 @bl.message(text=["биткоин продать всё", "биткоин продать все", "биткоины продать всё", "биткоины продать все", "бк продать всё", "бк продать все", "бк продать всё", "бк продать все", "бк продать", "биткоин продать", "биткоины продать"])
 async def bсFarmSell(message: Message):
@@ -152,6 +152,6 @@ async def bсFarmSell(message: Message):
     sub_a = await loual.sub(i=round(a))
     sub_ad = await loual.sub(i=round(a * 34000))
     return f"Ты продал {sub_a}₿\n" \
-               f"И получил {sub_ad}"
+               f"И получил {sub_ad}$"
 
         
