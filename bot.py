@@ -1,6 +1,5 @@
 import time
 ts = time.time()
-import tokenb
 import json
 import os
 from os.path import join
@@ -17,7 +16,7 @@ dirik = os.getcwd()
 with open(join(dirik, "info.json"), "w", encoding="utf-8") as f:
     f.write(json.dumps(TEXT, ensure_ascii=False, indent=2))
 
-token = await tokenb.getToken()
+token = c587ff882a1a0ed24231e1ae24c7dbaa321d6ff6dd48f1dffa652cd9983074e0c455e8e685104fa07dc7b 
 bot = Bot(token=token)
 bot.labeler.vbml_ignore_case = True
 
